@@ -4,6 +4,7 @@ from flask_cors import CORS
 from pydantic import ValidationError
 from models import SurveySubmission, StoredSurveyRecord
 from storage import append_json_line
+import hashlib
 
 app = Flask(__name__)
 # Allow cross-origin requests so the static HTML can POST from localhost or file://
@@ -33,9 +34,17 @@ def submit_survey():
         **submission.dict(),
         received_at=datetime.now(timezone.utc),
         ip=request.headers.get("X-Forwarded-For", request.remote_addr or "")
+        user_agent=request.headers.get("User-Agent","Unavailable")
     )
     append_json_line(record.dict())
     return jsonify({"status": "ok"}), 201
 
 if __name__ == "__main__":
     app.run(port=0, debug=True)
+
+#hashlib.sha256()
+#.hexdigest()
+#import hashlib
+
+#hash_object = hashlib.sha256()
+#print(hash_object.hexdigest())
