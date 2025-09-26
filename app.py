@@ -33,18 +33,20 @@ def submit_survey():
     record = StoredSurveyRecord(
         **submission.dict(),
         received_at=datetime.now(timezone.utc),
-        ip=request.headers.get("X-Forwarded-For", request.remote_addr or "")
-        user_agent=request.headers.get("User-Agent","Unavailable")
+        ip= request.headers.get("X-Forwarded-For", request.remote_addr or ""),
+        #user_agent= request.headers.get("User-Agent"),
+        #submission_id= (hashlib.sha256((submission.dict()["email"] + datetime.now(timezone.utc).strftime("%Y%m%d%H")).encode())).hexdigest()
     )
-    append_json_line(record.dict())
+    record_dict=record.dict()
+    record_dict["user_agent"]=request.headers.get("User-Agent")
+    record_dict["submission_id"]=(hashlib.sha256((submission.dict()["email"] + datetime.now(timezone.utc).strftime("%Y%m%d%H")).encode())).hexdigest()
+    record_dict["email"]=hashlib.sha256(record.dict()["email"].encode()).hexdigest()
+    record_dict["age"]=hashlib.sha256(str(record.dict()["age"]).encode()).hexdigest()
+    append_json_line(record_dict)
     return jsonify({"status": "ok"}), 201
 
 if __name__ == "__main__":
     app.run(port=0, debug=True)
-
-#hashlib.sha256()
-#.hexdigest()
-#import hashlib
 
 #hash_object = hashlib.sha256()
 #print(hash_object.hexdigest())
